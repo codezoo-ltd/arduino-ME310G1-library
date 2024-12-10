@@ -29,11 +29,9 @@
 #include <ME310.h>
 //#include <string.h>
 
-#define APN "APN"
+#define APN "simplio.apn"
 
-#ifndef ARDUINO_TELIT_SAMD_CHARLIE
-#define ON_OFF 6 /*Select the GPIO to control ON_OFF*/
-#endif
+#define ON_OFF 2 /*Select the GPIO to control ON_OFF*/
 
 using namespace me310;
 /*
@@ -43,7 +41,7 @@ using namespace me310;
  * Uart Serial1(&sercom4, PIN_MODULE_RX, PIN_MODULE_TX, PAD_MODULE_RX, PAD_MODULE_TX, PIN_MODULE_RTS, PIN_MODULE_CTS);
  * ME310 myME310 (Serial1);
  */
-ME310 myME310;
+ME310 myME310(Serial1);
 ME310::return_t rc;     //Enum of return value  methods
 
 int cID = 1;            //PDP Context Identifier
@@ -59,14 +57,15 @@ void setup() {
   pinMode(LED_BUILTIN, OUTPUT);
 
   Serial.begin(115200);
-  myME310.begin(115200);
+  Serial1.begin(115200);
+  myME310.debugMode(false);
 
   delay(3000);
   myME310.module_reboot();                            // issue command at#reboot
 
   delay(10000);
   Serial.println("Telit Test AT Socket command");
-  myME310.powerOn();
+  myME310.powerOn(ON_OFF);
   Serial.println("ME310 ON");
 
   myME310.report_mobile_equipment_error(2);           //issue command AT+CMEE=2 and wait for answer or timeout
