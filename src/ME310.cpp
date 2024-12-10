@@ -52,34 +52,21 @@ const char *ME310::NO_CARRIER_STRING = "NO CARRIER";   ///< String for NO CARRIE
 /*!
  * \param aSerial Uart object for serial communication
  */
-ME310::ME310(Uart &aSerial): mSerial(aSerial)
+ME310::ME310(Stream &aSerial): mSerial(aSerial)
 {}
 
 //! \brief Class Destructor
 /*!
  */
 ME310::~ME310()
-{
-   mSerial.end();
-}
+{}
 
-/*! \brief Begin method
-   \param baudRate baud rate of Uart for serial communication
+/*! \brief DebugMode method
+   \param debug for debugMode On/Off
 */
-void ME310::begin(unsigned long baudRate, bool debug)
+void ME310::debugMode(bool debug)
 {
-   mBaudrate = baudRate;
    _debug = debug;
-   mSerial.begin(baudRate);
-}
-
-/*! \brief End method
-/*! \details
-This method calls the end of the Serial.
-*/
-void ME310::end()
-{
-   mSerial.end();
 }
 
 /*! \brief Power ON module
@@ -106,14 +93,12 @@ void ME310::powerOn(unsigned int onoff_gpio)
       is_ready = true;
       break;
     }
-    mSerial.end();
     digitalWrite(onoff_gpio, HIGH);
     digitalWrite(LED_BUILTIN, HIGH);
     delay(6000);
     digitalWrite(onoff_gpio, LOW);
     digitalWrite(LED_BUILTIN, LOW);
     delay(1000);
-    begin(mBaudrate);
     for(int i = 0; i < 5; i++)
     {
       if(attention() == ME310::RETURN_TOUT)

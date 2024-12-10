@@ -107,23 +107,14 @@ namespace me310
          REGISTRATION_UPDATE = 2,
          REGISTRATION_INFO = 3
       } LWM2M_REG_ACTION;
-      
-      #ifdef ARDUINO_TELIT_SAMD_CHARLIE
-      ME310(Uart &aSerial = SerialModule);
-      #else
-      ME310(Uart &aSerial);
-      #endif
+
+	  ME310(Stream &aSerial);
 
       ~ME310();
 
-      #ifdef ARDUINO_TELIT_SAMD_CHARLIE
-      void powerOn(unsigned int onoff_gpio = ON_OFF);
-      #else
-      void powerOn(unsigned int onoff_gpio);
-      #endif
+      void powerOn(unsigned int onoff_gpio = 2);
 
-      void begin(unsigned long baudRate, bool debug = false);
-      void end();
+      void debugMode(bool debug = false);
 
    // Command Line Prefixes -------------------------------------------------------
       return_t attention(tout_t aTimeout = TOUT_100MS);
@@ -1492,7 +1483,7 @@ namespace me310
       static const char *str_equal(const char *buffer, const char *string);
       static const char *return_string(return_t rc);
 
-      Uart* getSerial(){return &mSerial;}
+      Stream* getSerial(){return &mSerial;}
 
       protected:
 
@@ -1509,9 +1500,7 @@ namespace me310
 
       char * floatToString(double number, int digits, char *buf, int size);
 
-
-      Uart &mSerial;                    //!< Reference to Uart used for communication
-      uint32_t mBaudrate;                //!
+      Stream &mSerial;                  //!< Reference to Uart used for communication
       uint8_t mBuffer[ME310_BUFFSIZE];  //!< Transmission buffer
       uint8_t *mpBuffer = 0;            //!< Pointer to free position in buffer
       size_t  mBuffLen = 0;             //!< Buffer length
