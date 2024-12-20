@@ -34,7 +34,7 @@
 #include <ME310.h>
 #include <string.h>
 
-#define APN "APN"
+#define APN "simplio.apn"
 #define HOSTNAME "api-dev.devicewise.com"
 #define PORT 1883
 
@@ -42,9 +42,7 @@
 #define CLIENT_USERNAME "CLIENTUSERNAME"
 #define CLIENT_PASSWORD "PASSWORD"
 
-#ifndef ARDUINO_TELIT_SAMD_CHARLIE
-#define ON_OFF 6 /*Select the GPIO to control ON_OFF*/
-#endif
+#define ON_OFF 2 /*Select the GPIO to control ON_OFF*/
 
 using namespace me310;
 /*
@@ -54,7 +52,7 @@ using namespace me310;
  * Uart Serial1(&sercom4, PIN_MODULE_RX, PIN_MODULE_TX, PAD_MODULE_RX, PAD_MODULE_TX, PIN_MODULE_RTS, PIN_MODULE_CTS);
  * ME310 myME310 (Serial1);
  */
-ME310 myME310;
+ME310 myME310 (Serial1);
 ME310::return_t rc;     //Enum of return value  methods
 
 int cID = 1;          //PDP Context Identifier
@@ -69,15 +67,16 @@ void setup() {
   pinMode(LED_BUILTIN, OUTPUT);
 
   Serial.begin(115200);
-  myME310.begin(115200);
+  Serial1.begin(115200);
+  myME310.debugMode(true);
 
   delay(1000);
 
-  myME310.powerOn();
+  myME310.powerOn(ON_OFF);
   Serial.println("Telit Test AT MQTT command");
   Serial.println("ME310 ON");
   Serial.println("AT Command");
-   ////////////////////////////////////
+  ////////////////////////////////////
   // Report Mobile Equipment Error CMEE
   // (0 -> disable, 1-> enable numeric
   // values, 2 -> enable verbose mode)
