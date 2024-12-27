@@ -29,23 +29,22 @@
 #include <Arduino.h>
 #include <ME310.h>
 
-#ifndef ARDUINO_TELIT_SAMD_CHARLIE
-#define ON_OFF 6 /*Select the GPIO to control ON_OFF*/
-#endif
+#define ON_OFF 2 /*Select the GPIO to control ON_OFF*/
 
 using namespace me310;
 
-ME310 myME310;
+ME310 myME310 (Serial1);
 ME310::return_t myRc;
 void setup() {
   int i = 0;
   const char OKanswer[] = "OK";
   Serial.begin(115200);
-  myME310.begin(115200);
+  Serial1.begin(115200);
+  myME310.debugMode(false);
   delay(1000);
   Serial.println("Generic AT Command test");
   delay(1000);
-  myME310.powerOn();
+  myME310.powerOn(ON_OFF);
   Serial.println("ME310 is ON");
 
   /*
