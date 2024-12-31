@@ -7765,22 +7765,26 @@ ME310::return_t ME310::wait_for(const char* aCommand, int flag, const char *aAns
       {
          if(dataParsing->commandResponseResult())
          {
+			char _resultCMD[64]={0};
+
             _payloadData = (uint8_t *) dataParsing->extractedPayload();
-            if(str_equal(dataParsing->commandResponseString(), OK_STRING))
+			sprintf(_resultCMD,"%s",dataParsing->commandResponseString());
+
+			if(!strncmp(_resultCMD, OK_STRING, strlen(OK_STRING)))
             {
-               rc = RETURN_VALID;
+				rc = RETURN_VALID;
             }
-            else if(str_equal(dataParsing->commandResponseString(), NO_CARRIER_STRING))
+            else if(!strncmp(_resultCMD, NO_CARRIER_STRING, strlen(NO_CARRIER_STRING)))
             {
-               rc = RETURN_VALID;
+                rc = RETURN_VALID;
             }
-            else if (str_equal(dataParsing->commandResponseString(), ERROR_STRING))
+            else if(!strncmp(_resultCMD, ERROR_STRING, strlen(ERROR_STRING)))
             {
-               rc = RETURN_ERROR;
+                rc = RETURN_ERROR;
             }
-            else if (str_start(dataParsing->commandResponseString(), CME_ERROR_STRING))
+            else if(!strncmp(_resultCMD, CME_ERROR_STRING, strlen(CME_ERROR_STRING)))
             {
-               rc = RETURN_ERROR;
+                rc = RETURN_ERROR;
             }
          }
          else
