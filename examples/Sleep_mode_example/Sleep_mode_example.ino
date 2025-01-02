@@ -32,9 +32,8 @@
 /*When NMEA_DEBUG is 0 Unsolicited NMEA is disable*/
 #define NMEA_DEBUG 0
 
-#ifndef ARDUINO_TELIT_SAMD_CHARLIE
-#define ON_OFF 6 /*Select the GPIO to control ON_OFF*/
-#endif
+#define ON_OFF 2 /*Select the GPIO to control ON_OFF*/
+#define DTR_GPIO 3 /*Select the GPIO to control Module_DTR*/
 
 using namespace me310;
 
@@ -46,7 +45,7 @@ using namespace me310;
  * ME310 myME310 (Serial1);
  */
 
-ME310 myME310;
+ME310 myME310 (Serial1);
 ME310::return_t rc;
 
 int val;
@@ -54,10 +53,11 @@ int val;
 void setup()
 {
   Serial.begin(115200);
-  myME310.begin(115200);
+  Serial1.begin(115200);
+  myME310.debugMode(false);
 
   delay(4000);
-  myME310.powerOn();
+  myME310.powerOn(ON_OFF);
   Serial.println("ME310 is ON");
 
   Serial.println("Application start");
@@ -71,14 +71,14 @@ void setup()
   myME310.module_reboot();    //issue command AT#REBOOT
   delay(5000);
 
-  pinMode(PIN_MODULE_DTR,OUTPUT);     //this command sets the DTR PIN in OUTPUT mode
-  digitalWrite(PIN_MODULE_DTR, LOW);  //this command sets the DTR PIN to LOW level
+  pinMode(DTR_GPIO,OUTPUT);     //this command sets the DTR PIN in OUTPUT mode
+  digitalWrite(DTR_GPIO, LOW);  //this command sets the DTR PIN to LOW level
 }
 
 void loop() {
 
   Serial.print("Value of DTR is: ");
-  val = digitalRead(PIN_MODULE_DTR);    //this command reads the DTR PIN value, it is only for control
+  val = digitalRead(DTR_GPIO);    //this command reads the DTR PIN value, it is only for control
   Serial.println(val);
 
   Serial.print("CFUN=5 result: ");
@@ -94,10 +94,10 @@ void loop() {
 
   delay(3000);
   Serial.println("Move DTR to OFF");
-  digitalWrite(PIN_MODULE_DTR, HIGH);   //this command sets the DTR PIN to HIGH level
+  digitalWrite(DTR_GPIO, HIGH);   //this command sets the DTR PIN to HIGH level
 
   Serial.print("Value of DTR: ");
-  val = digitalRead(PIN_MODULE_DTR);
+  val = digitalRead(DTR_GPIO);
   Serial.println(val);
 
   myME310.attention();
@@ -112,10 +112,10 @@ void loop() {
 
   delay(1000);
   Serial.println("Move DTR to ON");
-  digitalWrite(PIN_MODULE_DTR, LOW);  //this command sets the DTR PIN to LOW level, it moves the DTR PIN to wake-up the module
+  digitalWrite(DTR_GPIO, LOW);  //this command sets the DTR PIN to LOW level, it moves the DTR PIN to wake-up the module
 
   Serial.print("Value of DTR: ");
-  val = digitalRead(PIN_MODULE_DTR);
+  val = digitalRead(DTR_GPIO);
   Serial.println(val);
   delay(3000);
 
