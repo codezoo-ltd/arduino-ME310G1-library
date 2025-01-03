@@ -185,7 +185,7 @@ namespace me310
       _TEST(phone_activity_status,"AT+CPAS",TOUT_100MS)
 
       return_t set_phone_functionality(int fun = 1,int rst = 0, tout_t aTimeout = TOUT_100MS);
-      _READ_TEST(set_phone_functionality,"AT+CFUN",TOUT_100MS)
+      _READ_TEST(set_phone_functionality,"AT+CFUN",TOUT_1SEC)
 
       return_t mobile_equipment_event_reporting(int mode = 0, int keyp = 0, int disp = 0, int ind = 0, int bfr = 0, tout_t aTimeout = TOUT_100MS);
       _READ_TEST(mobile_equipment_event_reporting,"AT+CMER",TOUT_100MS)
