@@ -52,6 +52,9 @@ int val;
 
 void setup()
 {
+	pinMode(ON_OFF, OUTPUT);
+	pinMode(LED_BUILTIN, OUTPUT);
+
 	Serial.begin(115200);
 	Serial1.begin(115200);
 	myME310.debugMode(false);
@@ -133,4 +136,3 @@ void loop() {
 	exit(0);
 
 }
-
