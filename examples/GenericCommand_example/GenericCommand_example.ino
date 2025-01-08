@@ -38,6 +38,10 @@ ME310::return_t myRc;
 void setup() {
   int i = 0;
   const char OKanswer[] = "OK";
+
+  pinMode(ON_OFF, OUTPUT);
+  pinMode(LED_BUILTIN, OUTPUT);
+
   Serial.begin(115200);
   Serial1.begin(115200);
   myME310.debugMode(false);
