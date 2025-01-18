@@ -35,14 +35,14 @@
 #include <string>
 
 
-#define APN "web.omnitel.it"
+#define APN "simplio.apn"
 
-#define ON_OFF 6 /*Select the GPIO to control ON_OFF*/
+#define ON_OFF 2 /*Select the GPIO to control ON_OFF*/
 
 
 using namespace me310;
 
-ME310 myME310;
+ME310 myME310 (Serial1);
 ME310::return_t myRc;
 char ipProt[] = "IP";
 const char* pin = 0;
@@ -57,7 +57,8 @@ void setup() {
   pinMode(LED_BUILTIN, OUTPUT);
   delay(100);
   Serial.begin(115200);
-  myME310.begin(115200);
+  Serial1.begin(115200);
+  myME310.debugMode(false);
   delay(1000);
   myME310.powerOn(ON_OFF);
   delay(2000);
