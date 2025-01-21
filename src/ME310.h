@@ -1361,7 +1361,7 @@ namespace me310
 
    // Deprecated methods-----------------------------------------------------------
       [[deprecated("Use LWM2M_enable(int enable, int ctxID, tout_t aTimeout) instead.")]]
-      return_t enableLWM2M(int enable, int ctxID,tout_t aTimeout=TOUT_1SEC);
+      return_t enableLWM2M(int enable, int ctxID,tout_t aTimeout=TOUT_5SEC);
       _READ_TEST(enableLWM2M,"AT#LWM2MENA",TOUT_100MS)
 
       [[deprecated("Use LWM2M_disable(int disable, tout_t aTimeout) instead.")]]
