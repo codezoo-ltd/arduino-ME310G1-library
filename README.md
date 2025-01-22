@@ -24,7 +24,7 @@ The following examples are available:
 
  - **[CheckModule](examples/CheckModule/CheckModule.ino)** : _Turns the modem on and checks if it responsive_
  - **[FTP_example](examples/FTP_example/FTP_example.ino)** : _Connects to an FTP server and performs basic operations_
- - **[GNSS_To_LTE_example](examples/GNSS_To_LTE_example/GNSS_To_LTE_example.ino)** : A simple example of sending data acquired from GNSS to Telit server via LTE_
+ - **[GNSS_To_LTE_example](examples/GNSS_To_LTE_example/GNSS_To_LTE_example.ino)** : A simple example of sending data acquired from GNSS to Telit server via LTE
  - **[GNSS_example](examples/GNSS_example/GNSS_example.ino)** : _Simple GNSS example, it enables the GNSS receiver and provides raw location data_
  - **[LWM2M_example](examples/LWM2M_example/)** : _uses LwM2M protocol and the Gnss locattion to send data to the OneEdge portal_
    - **[LWM2M_example_4G](examples/LWM2M_example/LWM2M_example_4G/LWM2M_example_4G.ino)** : _example with 4G network_
