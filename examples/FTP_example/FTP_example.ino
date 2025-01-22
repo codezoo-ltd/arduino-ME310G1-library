@@ -26,6 +26,8 @@
 
   @date
     25/02/2021
+
+  @ported by rooney.jang (rooney.jang@codezoo.co.kr)	
  */
 
 #include <ME310.h>

@@ -28,6 +28,8 @@ Cristina Desogus
 
 @date
 02/07/2021
+
+@ported by rooney.jang (rooney.jang@codezoo.co.kr)
  */
 
 #include <ME310.h>

@@ -30,6 +30,8 @@
    Sketch for 4G products only->AT+WS46=28
 
 author: Cristina Ceron
+
+ported by rooney.jang (rooney.jang@codezoo.co.kr)
  */
 
 

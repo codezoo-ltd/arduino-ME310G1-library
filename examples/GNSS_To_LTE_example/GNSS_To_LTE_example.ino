@@ -25,6 +25,8 @@ Cristina Desogus
 
 @date
 26/02/2021
+
+@ported by rooney.jang (rooney.jang@codezoo.co.kr)
  */
 #include <ME310.h>
 //#include <string.h>

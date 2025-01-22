@@ -24,6 +24,8 @@
 
   @date
     28/10/2020
+
+  @ported by rooney.jang (rooney.jang@codezoo.co.kr)	
  */
 
 #include <ME310.h>
