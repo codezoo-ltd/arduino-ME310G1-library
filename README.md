@@ -26,7 +26,7 @@ The following examples are available:
  - **[FTP_example](examples/FTP_example/FTP_example.ino)** : _Connects to an FTP server and performs basic operations_
  - **[GNSS_To_LTE_example](examples/GNSS_To_LTE_example/GNSS_To_LTE_example.ino)** : _A simple example of sending data acquired from GNSS to Telit server via LTE_
  - **[GNSS_example](examples/GNSS_example/GNSS_example.ino)** : _Simple GNSS example, it enables the GNSS receiver and provides raw location data_
- - **[LWM2M_example](examples/LWM2M_example/)** : _uses LwM2M protocol and the Gnss locattion to send data to the OneEdge portal_
+ - **[LWM2M_example](examples/LWM2M_example/)** : _uses LwM2M protocol and the GNSS location to send data to the OneEdge portal_
    - **[LWM2M_example_4G](examples/LWM2M_example/LWM2M_example_4G/LWM2M_example_4G.ino)** : _example with 4G network_
  - **[LWM2M_Get_Object_example](examples/LWM2M_Get_Object_example/)** : _uses LwM2M GET OBJ functionality to access a whole object with single calls_
  - **[M2M_example](examples/M2M_example/M2M_example.ino)** : _Communicates with the modem using the M2M commands to manage the filesystem_
