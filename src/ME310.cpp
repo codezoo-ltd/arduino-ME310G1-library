@@ -77,11 +77,10 @@ This method makes the Power ON of the module
 void ME310::powerOn(unsigned int onoff_gpio)
 {
   bool is_ready = false;
-  digitalWrite(LED_BUILTIN, HIGH);
-  delay(200);
-  digitalWrite(LED_BUILTIN, LOW);
-  delay(500);
   char mybuffer[100];
+
+  pinMode(onoff_gpio, OUTPUT);
+
   while(!is_ready)
   {
     if(attention() == ME310::RETURN_TOUT)
@@ -94,10 +93,8 @@ void ME310::powerOn(unsigned int onoff_gpio)
       break;
     }
     digitalWrite(onoff_gpio, HIGH);
-    digitalWrite(LED_BUILTIN, HIGH);
     delay(6000);
     digitalWrite(onoff_gpio, LOW);
-    digitalWrite(LED_BUILTIN, LOW);
     delay(1000);
     for(int i = 0; i < 5; i++)
     {

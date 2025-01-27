@@ -31,6 +31,8 @@
 #include <ME310.h>
 
 #define ON_OFF 2 /*Select the GPIO to control ON_OFF*/
+#define MDMSerial Serial1
+#define MDMLed  LED_BUILTIN
 
 using namespace me310;
 /*
@@ -40,16 +42,14 @@ using namespace me310;
  * Uart Serial1(&sercom4, PIN_MODULE_RX, PIN_MODULE_TX, PAD_MODULE_RX, PAD_MODULE_TX, PIN_MODULE_RTS, PIN_MODULE_CTS);
  * ME310 myME310 (Serial1); 
  */
-ME310 myME310 (Serial1); 
+ME310 myME310; 
 ME310::return_t rc;     //Enum of return value  methods
 
 
 void setup() {
-  pinMode(ON_OFF, OUTPUT);
-  pinMode(LED_BUILTIN, OUTPUT);
-
+  pinMode(MDMLed, OUTPUT);
   Serial.begin(115200);
-  Serial1.begin(115200);
+  MDMSerial.begin(115200);
   myME310.debugMode(false);
   delay(1000);
 
@@ -57,14 +57,13 @@ void setup() {
   myME310.powerOn(ON_OFF);
   Serial.println("ME310 TURNED ON");
   Serial.println("Bridge Communication Enabled");
-
 }
 
 void loop() {
-  while (Serial1.available()) {
-    Serial.write(Serial1.read());
+  while (MDMSerial.available()) {
+    Serial.write(MDMSerial.read());
   }
   while (Serial.available()) {
-    Serial1.write(Serial.read());
+    MDMSerial.write(Serial.read());
   }
 }

@@ -30,6 +30,8 @@
 #include <ME310.h>
 
 #define ON_OFF 2 /*Select the right GPIO to control ON_OFF*/
+#define MDMSerial Serial1
+#define MDMLed	LED_BUILTIN
 
 using namespace me310;
 /*
@@ -39,18 +41,17 @@ using namespace me310;
  * Uart Serial1(&sercom4, PIN_MODULE_RX, PIN_MODULE_TX, PAD_MODULE_RX, PAD_MODULE_TX, PIN_MODULE_RTS, PIN_MODULE_CTS);
  * ME310 myME310 (Serial1);
  */
-ME310 myME310 (Serial1);
+ME310 myME310;
 bool ready = false;
 
 void setup() {
-  pinMode(ON_OFF, OUTPUT);
-  pinMode(LED_BUILTIN, OUTPUT);
-
-  Serial1.begin(115200);
+  pinMode(MDMLed, OUTPUT);
+  MDMSerial.begin(115200);
   myME310.debugMode(false);
 
   delay(1000);
   myME310.powerOn(ON_OFF);
+
   if(myME310.attention() == ME310::RETURN_VALID)
   {
 	 ready = true;
@@ -60,9 +61,9 @@ void setup() {
 void loop() {
 	if(ready)
 	{
-		digitalWrite(LED_BUILTIN, HIGH);
+		digitalWrite(MDMLed, HIGH);
 		delay(500);
-		digitalWrite(LED_BUILTIN, LOW);
+		digitalWrite(MDMLed, LOW);
 		delay(500);
 	}
 	else
