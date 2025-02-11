@@ -108,13 +108,9 @@ namespace me310
          REGISTRATION_INFO = 3
       } LWM2M_REG_ACTION;
 
-      #if defined(ARDUINO_UNOR4_WIFI) || defined(ARDUINO_UNOR4_MINIMA)
       ME310(Stream &aSerial = Serial1);
-      #else
-      ME310(Stream &aSerial);
-      #endif
 
-	  ~ME310();
+      ~ME310();
 
       void powerOn(unsigned int onoff_gpio = 2);
 
