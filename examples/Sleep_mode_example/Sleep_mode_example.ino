@@ -48,7 +48,7 @@ using namespace me310;
  * PAD_MODULE_TX, PIN_MODULE_RTS, PIN_MODULE_CTS); ME310 myME310 (Serial1);
  */
 
-ME310 myME310(Serial1);
+ME310 myME310;
 ME310::return_t rc;
 
 int val;
