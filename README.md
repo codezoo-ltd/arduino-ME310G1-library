@@ -41,6 +41,7 @@ The following examples are available:
 
 ## Support
 ![Image](https://github.com/user-attachments/assets/7fa05a9d-26ce-4f6f-b8b3-c8b663811b07)
+![Image](https://github.com/user-attachments/assets/353cac98-8e0b-4d07-904d-fb179d0bef5e)
 If you need support, please open a ticket to our technical support by sending an email to:
 
  - rooney.jang@codezoo.co.kr
