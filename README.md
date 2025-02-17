@@ -1,8 +1,9 @@
 # CodeZoo ME310G1 Modem official communication library for Arduino
 
 Code Library forked the Telit Charlie Arduino Library([Charlie Arduino Library](https://github.com/telit/arduino-me310-library)) and ported it to work with the CodeZoo ME310G1 Modem. 
-We modified the library and examples to work with Arduino UNO R4 and excluded examples that don't work due to different hardware environments from the Charlie board. 
+We modified the library and examples to work with Arduino UNO R4 and excluded examples that don't work due to different hardware environments from the Charlie board.
 
+([ME310G1-W3](https://github.com/codezoo-ltd/ME310G1-W3)) for the hardware resources and manuals we used to get the library and examples working.
 
 ## Contents
 
