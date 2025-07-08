@@ -8128,8 +8128,8 @@ void ME310::ConvertBufferToIRA(uint8_t* recv_buf, uint8_t* out_buf, int size)
     memset(out_buf, 0, (size*2)+1);
     for (unsigned int i = 0; i < size; i++)
     {
-        byte nib1 = (recv_buf[i] >> 4) & 0x0F;
-        byte nib2 = (recv_buf[i] >> 0) & 0x0F;
+        uint8_t nib1 = (recv_buf[i] >> 4) & 0x0F;
+        uint8_t nib2 = (recv_buf[i] >> 0) & 0x0F;
         out_buf[i*2+0] = nib1  < 0xA ? '0' + nib1  : 'A' + nib1  - 0xA;
         out_buf[i*2+1] = nib2  < 0xA ? '0' + nib2  : 'A' + nib2  - 0xA;
     }
