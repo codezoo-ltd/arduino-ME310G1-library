@@ -93,9 +93,9 @@ void ME310::powerOn(unsigned int onoff_gpio)
       break;
     }
     digitalWrite(onoff_gpio, HIGH);
-    delay(6000);
+    delay(5000);
     digitalWrite(onoff_gpio, LOW);
-    delay(1000);
+    delay(100);
     for(int i = 0; i < 5; i++)
     {
       if(attention() == ME310::RETURN_TOUT)
@@ -110,6 +110,10 @@ void ME310::powerOn(unsigned int onoff_gpio)
     }
     /*Read any remaining bytes from the uart buffer to get rid of any pending response*/
     mSerial.readBytes(mybuffer, 100);
+    gnss_controller_power_management(1);
+    delay(1000);
+    gnss_controller_power_management(0);
+    delay(10);
   }
 }
 
