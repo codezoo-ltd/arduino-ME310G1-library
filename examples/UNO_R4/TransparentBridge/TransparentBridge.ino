@@ -58,10 +58,29 @@ void setup() {
 }
 
 void loop() {
-  while (MDMSerial.available()) {
-    Serial.write(MDMSerial.read());
+  if (MDMSerial.available()) {
+    char buffer[256];
+    int len = 0;
+
+    delay(10);
+
+    while (MDMSerial.available() && len < sizeof(buffer)) {
+      buffer[len++] = MDMSerial.read();
+    }
+
+    Serial.write((uint8_t*)buffer, len);
   }
-  while (Serial.available()) {
-    MDMSerial.write(Serial.read());
+
+  if (Serial.available()) {
+    char buffer[256];
+    int len = 0;
+
+    delay(10);
+
+    while (Serial.available() && len < sizeof(buffer)) {
+      buffer[len++] = Serial.read();
+    }
+
+    MDMSerial.write((uint8_t*)buffer, len);
   }
 }
