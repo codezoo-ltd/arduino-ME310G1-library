@@ -7642,7 +7642,7 @@ ME310::return_t ME310::wait_for(const char *aAnswer, ME310::tout_t aTimeout)
    mpBuffer = mBuffer;
    memset(mBuffer,0,ME310_BUFFSIZE);
    const uint8_t *pBuffer;
-   unsigned long timeout = 0;
+   unsigned long start = millis();
    do
    {
       if(mBuffLen != ME310_BUFFSIZE)
@@ -7683,7 +7683,7 @@ ME310::return_t ME310::wait_for(const char *aAnswer, ME310::tout_t aTimeout)
          else if(bytesRead == 1) // if empty string do no add to buffer
             {}
          else
-            timeout+=mSerial.getTimeout();
+			{}
       }
       else
       {
@@ -7693,7 +7693,7 @@ ME310::return_t ME310::wait_for(const char *aAnswer, ME310::tout_t aTimeout)
          memset(mBuffer,0,ME310_BUFFSIZE);
       }
 
-   }while(timeout < aTimeout);
+   }while(millis() - start < aTimeout);
    on_timeout();
 return RETURN_TOUT;
 }
@@ -7720,7 +7720,7 @@ ME310::return_t ME310::wait_for(const char* aCommand, int flag, const char *aAns
    mpBuffer = mBuffer;
    _payloadData = nullptr;
    memset(mBuffer,0,ME310_BUFFSIZE);
-   unsigned long timeout = 0;
+   unsigned long start = millis();
    do
    {
       if(mBuffLen < ME310_BUFFSIZE)
@@ -7744,9 +7744,7 @@ ME310::return_t ME310::wait_for(const char* aCommand, int flag, const char *aAns
          else if(bytesRead == 1) /* if empty string do no add to buffer */
          {}
          else
-         {
-            timeout+=mSerial.getTimeout();
-         }
+         {}
       }
       else
       {
@@ -7757,7 +7755,7 @@ ME310::return_t ME310::wait_for(const char* aCommand, int flag, const char *aAns
          memset(tmp_str,0,ME310_BUFFSIZE);
       }
    }
-   while(timeout < aTimeout);
+   while(millis() - start < aTimeout);
    dataParsing =  new  ATCommandDataParsing((char*)aCommand, tmp_str, flag, _option);
    if(dataParsing->parserIs())
    {
@@ -7827,7 +7825,7 @@ ME310::return_t ME310::receive_data(tout_t aTimeout)
    mpBuffer = mBuffer;
    _payloadData = nullptr;
    memset(mBuffer,0,ME310_BUFFSIZE);
-   unsigned long timeout = 0;
+   unsigned long start = millis();
    do
    {
       if(mBuffLen != ME310_BUFFSIZE)
@@ -7846,9 +7844,7 @@ ME310::return_t ME310::receive_data(tout_t aTimeout)
          else if(bytesRead == 1) // if empty string do no add to buffer
          {}
          else
-         {
-            timeout+=mSerial.getTimeout();
-         }
+         {}
       }
       else
       {
@@ -7858,7 +7854,7 @@ ME310::return_t ME310::receive_data(tout_t aTimeout)
          memset(mBuffer,0,ME310_BUFFSIZE);
          memset(tmp_str,0,ME310_BUFFSIZE);
       }
-   }while(timeout < aTimeout);
+   }while(millis() - start < aTimeout);
    _payloadData = (uint8_t *) tmp_str;
    on_timeout();
    return RETURN_VALID;
@@ -7884,7 +7880,8 @@ ME310::return_t ME310::wait_for_unsolicited(tout_t aTimeout)
 ME310::return_t ME310::read_line(const char *aAnswer, ME310::tout_t aTimeout)
 {
    mBuffLen = 0;
-   for(unsigned long timeout = 0; timeout < aTimeout; )
+   unsigned long start = millis();
+   while (millis() - start < aTimeout)
    {
       int bytesRead=mSerial.readBytesUntil('\n', mBuffer, ME310_BUFFSIZE-mBuffLen-1);
       if(bytesRead>0)
@@ -7917,9 +7914,7 @@ ME310::return_t ME310::read_line(const char *aAnswer, ME310::tout_t aTimeout)
          return RETURN_DATA;
       }
       else
-      {
-         timeout+=mSerial.getTimeout();
-      }
+      {}
    }
    on_timeout();
 return RETURN_TOUT;
