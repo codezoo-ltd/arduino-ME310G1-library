@@ -113,6 +113,7 @@ namespace me310
       ~ME310();
 
       void powerOn(unsigned int onoff_gpio = 2);
+      void powerOff(unsigned int onoff_gpio = 2);
 
       void debugMode(bool debug = false);
 

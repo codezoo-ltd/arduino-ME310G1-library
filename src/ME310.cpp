@@ -117,6 +117,21 @@ void ME310::powerOn(unsigned int onoff_gpio)
   }
 }
 
+/*! \brief Power Off module
+/*! \details
+This method makes the Power ON of the module
+ * \param onoff_gpio GPIO to control ON/OFF
+*/
+void ME310::powerOff(unsigned int onoff_gpio)
+{
+  pinMode(onoff_gpio, OUTPUT);
+
+  digitalWrite(onoff_gpio, HIGH);
+  delay(3000);
+  digitalWrite(onoff_gpio, LOW);
+  delay(100);
+}
+
 // Command Line Prefixes -------------------------------------------------------
 //! \brief Implements the AT command and waits for OK answer
 /*!
