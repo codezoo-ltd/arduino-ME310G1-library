@@ -2,6 +2,7 @@
 #include <ME310.h>
 
 #define ON_OFF 2 /*Select the GPIO to control ON_OFF*/
+#define HTTP_CERT 0  /* 0: GMail SMTPS Cert Write, 1: HTTPS Cert Write */
 
 using namespace me310;
 
@@ -31,7 +32,7 @@ ME310::return_t rc; // Enum of return value methods
 // --- Root CA Certificate (Amazon Root CA 1 using https://httbin.org) ---
 // WARNING: This Arduino sketch file (.ino) must be saved with 'LF (Unix)' EOL in your editor.
 // Clean original text state with all \n removed
-/*
+#if HTTP_CERT
 const char* rootCA = R"EOF(-----BEGIN CERTIFICATE-----
 MIIDQTCCAimgAwIBAgITBmyfz5m/jAo54vB4ikPmljZbyjANBgkqhkiG9w0BAQsF
 ADA5MQswCQYDVQQGEwJVUzEPMA0GA1UEChMGQW1hem9uMRkwFwYDVQQDExBBbWF6
@@ -52,7 +53,7 @@ o/ufQJVtMVT8QtPHRh8jrdkPSHCa2XV4cdFyQzR1bldZwgJcJmApzyMZFo6IQ6XU
 5MsI+yMRQ+hDKXJioaldXgjUkK642M4UwtBV8ob2xJNDd2ZhwLnoQdeXeGADbkpy
 rqXRfboQnoZsG4q5WTP468SQvvG5
 -----END CERTIFICATE-----)EOF";
-*/
+#else
 /* GMail RootCA */
 const char* rootCA = R"EOF(-----BEGIN CERTIFICATE-----
 MIICnjCCAiWgAwIBAgIQf/Mta0CdFdWWWwWHOnxy4DAKBggqhkjOPQQDAzBHMQsw
@@ -71,6 +72,7 @@ C724NlXINaPS2X05c9P394K4CdGBb+VkRdveqsAORRKPrJPoH2DsLn5ELCKUkeys
 AjAv3wyQdkwtaWHVT/2YmBiE2zTqmOybzYhi/9Jl5TNqmgztI0k4L1G/kdASosk4
 ONo=
 -----END CERTIFICATE-----)EOF";
+#endif
 
 // --- Utility Function Declarations ---
 bool waitResponse(const char* expected, unsigned long timeout = 3000);
