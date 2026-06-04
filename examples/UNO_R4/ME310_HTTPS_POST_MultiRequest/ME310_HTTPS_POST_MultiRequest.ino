@@ -170,6 +170,24 @@ bool connectNetwork() {
     }
   }
 
+  //NTP Server setup (require of ssl sequence)
+  rc = myME310.configure_ntp_parameters(1,0,0,"",ME310::TOUT_5SEC);
+  if (rc == ME310::RETURN_VALID) {
+    DEBUG_SERIAL.println("-> NTP Configuration OK.");
+  } else {
+    DEBUG_SERIAL.println("-> [ERROR] NTP Configuration Failed. Halting.");
+    while (true);
+  } 
+
+  //+36 ( +9(hour) x 4(15min) )
+  rc = myME310.ntp("216.239.35.0",123,1,5,36,ME310::TOUT_10SEC);
+  if (rc == ME310::RETURN_VALID) {
+    DEBUG_SERIAL.println("-> NTP Configuration OK.");
+  } else {
+    DEBUG_SERIAL.println("-> [ERROR] NTP Configuration Failed. Halting.");
+    while (true);
+  }   
+
   return true;
 }
 
