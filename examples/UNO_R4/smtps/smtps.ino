@@ -122,7 +122,7 @@ void executeSmtpsSequence() {
   }
 
   // [Step 1-2] NTP Sync request
-  if (!sendATCommand("AT#NTP=\"216.239.35.0\",123,1,5", "#NTP:", 15000)) {
+  if (!sendATCommand("AT#NTP=\"216.239.35.0\",123,1,5,36", "#NTP:", 15000)) {
     Serial.println("\n[ERROR] NTP Setup Fail");
     return;
   }
