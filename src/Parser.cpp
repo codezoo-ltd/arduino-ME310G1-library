@@ -575,12 +575,20 @@ namespace telitAT
                 if(posMaj != string::npos)
                 {
                     size_t posMaj2 = tmp_str.find_first_of("<", posMaj + 1);
-                    if(posMaj2 != string::npos)
+					if (posMaj2 != string::npos)
                     {
                         size_t posMaj3 = tmp_str.find_first_of("<", posMaj2+1);
-                        if(posMaj3 != string::npos)
+                        if (posMaj3 != string::npos)
                         {
-                            posMaj3++;
+                            size_t nextLine = tmp_str.find_first_of("\n", posMaj3);
+                            if (nextLine != string::npos)
+                            {
+                                posMaj3 = nextLine + 1;
+                            }
+                            else
+                            {
+                                posMaj3++; // backup logic
+                            }
                         }
                         return posMaj3;
                     }
