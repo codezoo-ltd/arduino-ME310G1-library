@@ -58,10 +58,12 @@ void setup() {
   MDMSerial.begin(115200);
   delay(100);
   Serial.println("Telit Test AT Socket command");
-  myME310.debugMode(false);
+  myME310.debugMode(true);
   myME310.powerOn(ON_OFF);
-  myME310.module_reboot(); // issue command at#reboot
-  delay(10000);
+
+  //Socket CleanUp Code
+  myME310.socket_shutdown(connID,ME310::TOUT_10SEC);
+  myME310.context_activation(cID, 0, ME310::TOUT_10SEC);
 
   Serial.println("ME310 ON");
 
@@ -185,6 +187,10 @@ void loop() {
       Serial.println(myME310.return_string(r));
     }
   }
+  myME310.socket_shutdown(connID,ME310::TOUT_10SEC);
+  myME310.context_activation(cID, 0, ME310::TOUT_10SEC);
+  myME310.powerOff(ON_OFF);
+  Serial.println("ME310G1 Modem Power Off");
   Serial.println("The application has ended...");
   exit(0);
 }
