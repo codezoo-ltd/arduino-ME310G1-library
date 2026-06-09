@@ -17,6 +17,9 @@
 #define MODEM_SERIAL Serial1
 #define DEBUG_SERIAL Serial
 
+#define MQTT_PUB "test/reply"
+#define MQTT_SUB "test/topic"
+
 using namespace me310;
 
 ME310 myME310;
@@ -24,6 +27,7 @@ ME310::return_t rc;
 
 int cID = 1;           // PDP Context Identifier
 char ipProt[] = "IP";  // Packet Data Protocol type
+int instanceNum = 1;
 
 bool isConnect = false;
 String mqttRxBuffer = "";  // Global buffer to accumulate asynchronous URC data
@@ -43,6 +47,10 @@ void setup() {
 
   DEBUG_SERIAL.println("\n[INIT] Powering on modem...");
   myME310.powerOn(ON_OFF);
+  DEBUG_SERIAL.println("[CLEANUP] Disconnecting MQTTS Session...");
+  myME310.mqtt_disconnect(instanceNum, ME310::TOUT_3SEC);
+  myME310.mqtt_enable(1, 0, ME310::TOUT_3SEC);
+  myME310.context_activation(cID, 0, "", "", ME310::TOUT_3SEC);
 
   DEBUG_SERIAL.println("======================================");
   DEBUG_SERIAL.println(" ME310G1 AWS IoT MQTTS Secure Test    ");
@@ -93,8 +101,7 @@ void setup() {
         DEBUG_SERIAL.println("-> NTP Configuration OK.");
       } else {
         DEBUG_SERIAL.println("-> [ERROR] NTP Configuration Failed. Halting.");
-        while (true)
-          ;
+        while (true);
       }
 
       //+36 ( +9(hour) x 4(15min) )
@@ -103,8 +110,7 @@ void setup() {
         DEBUG_SERIAL.println("-> NTP Configuration OK.");
       } else {
         DEBUG_SERIAL.println("-> [ERROR] NTP Configuration Failed. Halting.");
-        while (true)
-          ;
+        while (true);
       }
       delay(1000);
 
@@ -164,16 +170,26 @@ void setup() {
 
         // Subscribe to target topic
         DEBUG_SERIAL.println("[MQTT] Subscribing to topic...");
-        myME310.mqtt_topic_subscribe(1, "test/topic");
+        myME310.mqtt_topic_subscribe(1, MQTT_SUB);
         delay(1000);
 
         // Publish test messages
         DEBUG_SERIAL.println("[MQTT] Publishing test messages...");
-        myME310.mqtt_publish(1, "test/reply", 0, 0, "Hello AWS");
+        myME310.mqtt_publish(1, MQTT_PUB, 0, 0, "Hello AWS");
         delay(2000);
-        myME310.mqtt_publish(1, "test/reply", 0, 0, "Hello\nAWS123");
+        myME310.mqtt_publish(1, MQTT_PUB, 0, 0, "Hello\nAWS123");
 
         DEBUG_SERIAL.println("\n>>> Setup Complete. Entering Asynchronous URC Listening Mode within setup()...\n");
+      } else {
+        DEBUG_SERIAL.println("[CLEANUP] Disconnecting MQTTS Session...");
+        myME310.mqtt_disconnect(instanceNum, ME310::TOUT_3SEC);
+        myME310.mqtt_enable(1, 0, ME310::TOUT_3SEC);
+        myME310.context_activation(cID, 0, "", "", ME310::TOUT_3SEC);
+        DEBUG_SERIAL.println("\n=== All MQTTS CLEANUP Procedures Done ===");
+
+        //Power off the modem right before leaving the setup sequence
+        myME310.powerOff(ON_OFF);
+        Serial.println("ME310G1 Modem Power Off");
       }
     }
   } else {
@@ -209,7 +225,6 @@ void setup() {
           int firstComma = ringLine.indexOf(',', colonIndex);
           int secondComma = ringLine.indexOf(',', firstComma + 1);
 
-          int instanceNum = 1;
           int msgId = 1;
 
           if (firstComma > 0 && colonIndex > 0) {
@@ -239,9 +254,9 @@ void setup() {
           // [STEP 7] Cleanup & Complete Power Down Sequence
           // ---------------------------------------------------------
           DEBUG_SERIAL.println("[CLEANUP] Disconnecting MQTTS Session...");
-          myME310.mqtt_disconnect(instanceNum,ME310::TOUT_3SEC);      
-          myME310.mqtt_enable(1, 0,ME310::TOUT_3SEC);
-          myME310.context_activation(cID, 0,"","",ME310::TOUT_3SEC);
+          myME310.mqtt_disconnect(instanceNum, ME310::TOUT_3SEC);
+          myME310.mqtt_enable(1, 0, ME310::TOUT_3SEC);
+          myME310.context_activation(cID, 0, "", "", ME310::TOUT_3SEC);
           DEBUG_SERIAL.println("\n=== All MQTTS Secure Procedures Done ===");
 
           //Power off the modem right before leaving the setup sequence

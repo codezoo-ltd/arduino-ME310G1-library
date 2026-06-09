@@ -17,6 +17,9 @@
 #define MDMSerial Serial1
 #define DEBUG_SERIAL Serial
 
+#define SUB_TOPIC "czme310/topic/get"
+#define PUB_TOPIC "czme310/topic/put"
+
 using namespace me310;
 
 ME310 myME310;
@@ -24,6 +27,7 @@ ME310::return_t rc;
 
 int cID = 1;          // PDP Context Identifier
 char ipProt[] = "IP"; // Packet Data Protocol type
+int instanceNum = 1;
 
 bool isConnect = false;
 String mqttRxBuffer = ""; // Global buffer to accumulate asynchronous URC data
@@ -35,7 +39,13 @@ void setup() {
 
   myME310.debugMode(true);
   myME310.powerOn(ON_OFF);
-  
+
+  DEBUG_SERIAL.println("[CLEANUP] Disconnecting MQTT Session...");
+  myME310.mqtt_disconnect(instanceNum, ME310::TOUT_3SEC);
+  myME310.mqtt_enable(1, 0, ME310::TOUT_3SEC);
+  myME310.context_activation(cID, 0, "", "", ME310::TOUT_3SEC);
+  DEBUG_SERIAL.println("\n=== All MQTT Public Procedures Done ===");  
+ 
   DEBUG_SERIAL.println("Telit Test AT MQTT command");
   DEBUG_SERIAL.println("ME310 ON");
   DEBUG_SERIAL.println("AT Command");
@@ -89,7 +99,8 @@ void setup() {
       // [STEP 2] Context Activation (AT#SGACT=1,1)
       // ---------------------------------------------------------
       DEBUG_SERIAL.println("Activate context");
-      myME310.context_activation(cID, 1); 
+      myME310.context_activation(cID, 1,ME310::TOUT_5SEC); 
+      DEBUG_SERIAL.println(myME310.buffer_cstr(1));
 
       // ---------------------------------------------------------
       // [STEP 3] MQTT Instance Enable (AT#MQEN=1,1)
@@ -129,12 +140,12 @@ void setup() {
 
           // MQTT Topic Subscribe
           DEBUG_SERIAL.print("MQTT Topic Subscribe: ");
-          myME310.mqtt_topic_subscribe(1, "czme310/topic/get"); 
+          myME310.mqtt_topic_subscribe(1, SUB_TOPIC); 
           DEBUG_SERIAL.println(myME310.buffer_cstr(1));
 
           // MQTT Topic Publish
           DEBUG_SERIAL.print("MQTT Publish: ");
-          myME310.mqtt_publish(1, "czme310/topic/put", 1, 0, "message");
+          myME310.mqtt_publish(1, PUB_TOPIC, 1, 0, "message");
           DEBUG_SERIAL.println(myME310.buffer_cstr(1));
           
           DEBUG_SERIAL.println("\n>>> Setup Complete. Entering Asynchronous URC Listening Mode within setup()...\n");
@@ -176,7 +187,6 @@ void setup() {
           int firstComma = ringLine.indexOf(',', colonIndex);
           int secondComma = ringLine.indexOf(',', firstComma + 1);
 
-          int instanceNum = 1;
           int msgId = 1;
 
           if (firstComma > 0 && colonIndex > 0) {
