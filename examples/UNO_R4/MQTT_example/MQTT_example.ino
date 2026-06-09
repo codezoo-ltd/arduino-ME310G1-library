@@ -44,7 +44,6 @@ void setup() {
   myME310.mqtt_disconnect(instanceNum, ME310::TOUT_3SEC);
   myME310.mqtt_enable(1, 0, ME310::TOUT_3SEC);
   myME310.context_activation(cID, 0, "", "", ME310::TOUT_3SEC);
-  DEBUG_SERIAL.println("\n=== All MQTT Public Procedures Done ===");  
  
   DEBUG_SERIAL.println("Telit Test AT MQTT command");
   DEBUG_SERIAL.println("ME310 ON");
