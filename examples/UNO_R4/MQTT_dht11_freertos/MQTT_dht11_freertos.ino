@@ -68,9 +68,9 @@ void setup() {
   xMQTTConnectSemaphore = xSemaphoreCreateBinary();
   xSensorQueue = xQueueCreate(1, sizeof(float[2]));  // [0]:Temp, [1]:Hum
 
-  xTaskCreate(vMQTTTask, "MQTT_Task", 1000, NULL, 2, &xMQTTTaskHandle);
+  xTaskCreate(vMQTTTask, "MQTT_Task", 1100, NULL, 2, &xMQTTTaskHandle);
   xTaskCreate(vSensorTask, "Sensor_Task", 200, NULL, 1, NULL);  
-  xTaskCreate(vCommandTask, "Cmd_Task", 150, NULL, 1, &xCommandTaskHandle);
+  xTaskCreate(vCommandTask, "Cmd_Task", 180, NULL, 1, &xCommandTaskHandle);
 
   vTaskStartScheduler();
 }
@@ -219,7 +219,7 @@ void vMQTTTask(void *pvParameters) {
             char jsonBuf[64];
             // Since MQTT AT commands do not support double quotes, 
             // single quotes are used as a fallback for JSON structure.
-            sprintf(jsonBuf, "{'temp':%.1f,'hum':%.1f}", data[0], data[1]);
+            sprintf(jsonBuf, "{\"temp\":%.1f,\"hum\":%.1f}", data[0], data[1]);
             myME310.mqtt_publish(1, PUB_TOPIC, 1, 0, jsonBuf);
             DEBUG_SERIAL.println("[MQTT] Status Report Sent.");
         }        
@@ -287,6 +287,16 @@ void vCommandTask(void *pvParameters) {
 
         vTaskDelete(NULL);  // Terminate own task
       }
+      if (inputKey == 'p' || inputKey == 'P') {
+        DEBUG_SERIAL.println("\n==============================================");
+        DEBUG_SERIAL.println("[USER CMD] 'p' detected! Hello World...");
+        DEBUG_SERIAL.println("==============================================");
+
+        char jsonBuf[64];
+        sprintf(jsonBuf, "{\"message\": \"Hello World!\"}");
+        myME310.mqtt_publish(1, PUB_TOPIC, 1, 0, jsonBuf);
+        DEBUG_SERIAL.println("[MQTT] Publish Message.");
+      }        
     }
     vTaskDelay(pdMS_TO_TICKS(100));
   }

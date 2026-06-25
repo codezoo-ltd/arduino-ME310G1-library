@@ -7110,9 +7110,22 @@ This command publishes an ASCII string to the specified MQTT topic.
  */
 ME310::return_t ME310::mqtt_publish(int instanceNumber, const char *topic, int retain, int qos, const char *message, tout_t aTimeout)
 {
+   ME310::return_t ret;
+   int data_len;
+   
    memset(mBuffer, 0, ME310_BUFFSIZE);
-   snprintf((char *)mBuffer, ME310_BUFFSIZE-1, F("AT#MQPUBS=%d,\"%s\",%d,%d,\"%s\""), instanceNumber, topic, retain, qos, message);
-   return send_wait((char*)mBuffer, OK_STRING, aTimeout);
+   
+   data_len = strlen(message);
+   
+   snprintf((char *)mBuffer, ME310_BUFFSIZE-1, F("AT#MQPUBSEXT=%d,\"%s\",%d,%d,%d"), instanceNumber, topic, retain, qos, data_len);
+   ret =  send_wait((char*)mBuffer, SEQUENCE_STRING, aTimeout);
+   if ((ret == RETURN_VALID))
+   {
+      memset(mBuffer, 0, ME310_BUFFSIZE);
+      memcpy(mBuffer, message, data_len);
+      ret =  send_wait((char*)mBuffer,OK_STRING,TERMINATION_STRING,aTimeout);
+   }
+   return ret;	
 }
 
 //! \brief Implements the AT\#MQREAD command and waits for OK answer
