@@ -47,7 +47,7 @@ ME310 myME310;
 ME310::return_t rc;
 
 // FTP Configuration
-#define FTP_ADDR_PORT "ADDRESS:PORT"
+#define FTP_ADDR_PORT "ADDRESS:PORT" //"ftpsample.com:21"
 #define FTP_USER      "CLIENTUSER"
 #define FTP_PASS      "PASSWORD"
 #define APN "simplio.apn"
@@ -145,6 +145,38 @@ void flashReadData(uint32_t addr, uint8_t *data, size_t len) {
 }
 
 // ==========================================
+// Smart Flash Writer Helper Functions
+// ==========================================
+static int32_t last_erased_sector = -1;
+
+void resetFlashWriter() {
+  last_erased_sector = -1;
+}
+
+void flashWriteBufferSmart(uint32_t addr, const uint8_t *data, size_t len) {
+  size_t bytes_written = 0;
+
+  while (bytes_written < len) {
+    uint32_t current_addr = addr + bytes_written;
+
+    // 1. Detect 4KB sector boundary crossings and auto-erase
+    int32_t current_sector = current_addr / 4096;
+    if (current_sector != last_erased_sector) {
+      flashEraseSector4K(current_sector * 4096);
+      last_erased_sector = current_sector;
+    }
+
+    // 2. Chunk writes to respect 256-byte page boundaries (Prevents data wrap-around)
+    uint32_t page_offset = current_addr % 256;
+    size_t bytes_to_write = min(len - bytes_written, (size_t)(256 - page_offset));
+
+    flashWritePage(current_addr, &data[bytes_written], bytes_to_write);
+
+    bytes_written += bytes_to_write;
+  }
+}
+
+// ==========================================
 // 4. Utility and Modem Utility Functions
 // ==========================================
 uint8_t hexToByte(char high, char low) {
@@ -173,7 +205,7 @@ String sendCommand(String cmd, uint32_t timeout_ms = 1000) {
 // 5. Download and Parse fw.bin.crc32 from FTP
 // ==========================================
 bool downloadCRCandSize(uint32_t &expected_crc, size_t &expected_size) {
-  Serial.println("[FTP] Receiving fw.bin.crc32 file...");
+  Serial.println("[FTP] Requesting fw.bin.crc32 file packet...");
 
   while (ModemSerial.available()) ModemSerial.read();
   ModemSerial.println("AT#FTPGETPKT=\"" + String(crc_filename) + "\",0");
@@ -182,14 +214,20 @@ bool downloadCRCandSize(uint32_t &expected_crc, size_t &expected_size) {
   String pktResponse = "";
   while (millis() - start_time < 10000) {
     while (ModemSerial.available()) pktResponse += (char)ModemSerial.read();
-    if (pktResponse.indexOf("OK\r\n") != -1 || pktResponse.indexOf("ERROR\r\n") != -1) break;
+    if (pktResponse.indexOf("OK\r\n") != -1 || pktResponse.indexOf("ERROR") != -1) break;
   }
 
-  ModemSerial.println("AT#FTPRECV=100");  // Read metadata
+  if (pktResponse.indexOf("OK") == -1) {
+    Serial.println("[Error] AT#FTPGETPKT rejected by modem.");
+    return false;
+  }
+
+  delay(200);
+  ModemSerial.println("AT#FTPRECV=100");
 
   start_time = millis();
   String response = "";
-  while (millis() - start_time < 3000) {
+  while (millis() - start_time < 5000) {
     while (ModemSerial.available()) response += (char)ModemSerial.read();
   }
 
@@ -198,20 +236,34 @@ bool downloadCRCandSize(uint32_t &expected_crc, size_t &expected_size) {
 
   int dataStart = response.indexOf('\n', startIdx) + 1;
   String textData = response.substring(dataStart);
+  textData.replace("\r", "");
+  textData.trim();
 
-  // Line 1: CRC32 Hex, Line 2: Size
   int lineBreak = textData.indexOf('\n');
   if (lineBreak == -1) return false;
 
   String crcStr = textData.substring(0, lineBreak);
-  crcStr.trim();
-  if (crcStr.startsWith("0x") || crcStr.startsWith("0X")) crcStr = crcStr.substring(2);
-
   String sizeStr = textData.substring(lineBreak + 1);
+  crcStr.trim();
   sizeStr.trim();
 
+  int hexStart = crcStr.indexOf("0x");
+  if (hexStart == -1) hexStart = crcStr.indexOf("0X");
+  if (hexStart != -1) {
+    crcStr = crcStr.substring(hexStart + 2);
+  }
+
+  String cleanSizeStr = "";
+  for (size_t i = 0; i < sizeStr.length(); i++) {
+    if (isDigit(sizeStr[i])) {
+      cleanSizeStr += sizeStr[i];
+    } else if (cleanSizeStr.length() > 0) {
+      break;
+    }
+  }
+
   expected_crc = strtoul(crcStr.c_str(), NULL, 16);
-  expected_size = sizeStr.toInt();
+  expected_size = cleanSizeStr.toInt();
 
   return (expected_crc != 0 && expected_size != 0);
 }
@@ -221,22 +273,27 @@ bool downloadCRCandSize(uint32_t &expected_crc, size_t &expected_size) {
 // ==========================================
 void performFOTA() {
   Serial.println("\n========== Starting FOTA Process ==========");
-  rc = myME310.ftp_close();
-  if (rc == ME310::RETURN_VALID) {
-    delay(2000);
-    myME310.debugMode(false);
-    rc = myME310.ftp_open(FTP_ADDR_PORT, FTP_USER, FTP_PASS, 0, cID, ME310::TOUT_2MIN);
+  
+  myME310.ftp_close();
+  delay(1000);
 
-    if (rc == ME310::RETURN_VALID) {
-      myME310.debugMode(true);
-      rc = myME310.ftp_change_working_directory("/", ME310::TOUT_10SEC);
-    } else {
-      Serial.println("[Error] Failed to connect to FTP server.");
-      return;
-    }
+  myME310.debugMode(false);
+  Serial.println("[FTP] Connecting to FTP server...");
+  rc = myME310.ftp_open(FTP_ADDR_PORT, FTP_USER, FTP_PASS, 0, cID, ME310::TOUT_2MIN);
+
+  if (rc == ME310::RETURN_VALID) {
+    myME310.debugMode(true);
+    delay(1000);
+    
+    rc = myME310.ftp_change_working_directory("/", ME310::TOUT_10SEC);
+    delay(500);
+  } else {
+    Serial.println("[Error] Failed to connect to FTP server.");
+    return;
   }
 
-  sendCommand("AT#FTPTYPE=0", 500);
+  sendCommand("AT#FTPTYPE=0", 1000);
+  delay(500);
 
   uint32_t expected_crc = 0;
   size_t total_size = 0;
@@ -250,17 +307,20 @@ void performFOTA() {
   serialPrintf("[META] Target CRC32: 0x%08X, Total Size: %d Bytes\n", expected_crc, total_size);
 
   sendCommand("AT#FTPGETPKT=\"" + String(fw_filename) + "\",1", 3000);
+  delay(500);
   Serial.println("[FOTA] Downloading & Writing to Serial Flash...");
 
   size_t total_written = 0;
   uint8_t binary_buffer[CHUNK_SIZE];
 
-  // Initialize RAM CRC calculation
   uint32_t ram_crc_accum;
   initSoftwareCRC32(&ram_crc_accum);
 
+  // Reset flash writer state tracking
+  resetFlashWriter();
+
   int empty_retries = 0;
-  const int MAX_EMPTY_RETRIES = 25;
+  const int MAX_EMPTY_RETRIES = 50;
 
   while (total_written < total_size) {
     size_t bytes_to_request = min((size_t)CHUNK_SIZE, total_size - total_written);
@@ -273,7 +333,7 @@ void performFOTA() {
     String recvHeader = "";
     bool headerFound = false;
 
-    while (millis() - req_time < 3000) {
+    while (millis() - req_time < 5000) {
       if (ModemSerial.available()) {
         char c = ModemSerial.read();
         recvHeader += c;
@@ -316,16 +376,24 @@ void performFOTA() {
 
     empty_retries = 0;
 
-    // Convert Hex String -> Binary
+    // Restore Hex String -> Binary payload
     size_t bytes_parsed = 0;
     req_time = millis();
+    int nibble_state = 0;
+    char high_char = 0;
 
-    while (bytes_parsed < actual_bytes && (millis() - req_time < 3000)) {
-      if (ModemSerial.available() >= 2) {
-        char high = ModemSerial.read();
-        char low = ModemSerial.read();
-        if (!isxdigit(high) || !isxdigit(low)) continue;
-        binary_buffer[bytes_parsed++] = hexToByte(high, low);
+    while (bytes_parsed < actual_bytes && (millis() - req_time < 5000)) {
+      while (ModemSerial.available() && bytes_parsed < actual_bytes) {
+        char c = ModemSerial.read();
+        if (isxdigit(c)) {
+          if (nibble_state == 0) {
+            high_char = c;
+            nibble_state = 1;
+          } else {
+            binary_buffer[bytes_parsed++] = hexToByte(high_char, c);
+            nibble_state = 0;
+          }
+        }
       }
     }
 
@@ -335,22 +403,12 @@ void performFOTA() {
       return;
     }
 
-    // 1) Accumulate S/W CRC32 for received buffer
+    // 1) Accumulate RAM CRC32
     updateSoftwareCRC32(&ram_crc_accum, binary_buffer, actual_bytes);
 
-    // 2) Write to SPI Flash (Erase at 4KB sector boundaries, then write in 256B pages)
+    // 2) Smart Flash Write (Automatic sector erase & page-boundary safe write)
     uint32_t current_flash_addr = FW_FLASH_START_ADDR + total_written;
-    for (size_t offset = 0; offset < actual_bytes; offset += 256) {
-      uint32_t target_addr = current_flash_addr + offset;
-
-      // Check 4KB sector boundary and erase
-      if (target_addr % 4096 == 0) {
-        flashEraseSector4K(target_addr);
-      }
-
-      size_t write_len = min((size_t)256, actual_bytes - offset);
-      flashWritePage(target_addr, &binary_buffer[offset], write_len);
-    }
+    flashWriteBufferSmart(current_flash_addr, binary_buffer, actual_bytes);
 
     total_written += actual_bytes;
     int percent = (total_written * 100) / total_size;
@@ -370,7 +428,7 @@ void performFOTA() {
   // ==========================================
   Serial.println("\n--- [Integrity Verification Started] ---");
 
-  // Stage 1: Validate CRC32 of RAM received data
+  // Stage 1: RAM CRC32 Verification
   uint32_t final_ram_crc = getSoftwareCRC32Result(ram_crc_accum);
   serialPrintf("Stage 1 RAM RX CRC32 Check   : 0x%08X (Target: 0x%08X) -> ", final_ram_crc, expected_crc);
 
@@ -380,7 +438,7 @@ void performFOTA() {
   }
   Serial.println("✅ PASS");
 
-  // Stage 2: Read-back and validate CRC32 from SPI Flash
+  // Stage 2: SPI Flash Read-back CRC32 Verification
   Serial.println("Calculating CRC32 by reading back SPI Flash data for Stage 2...");
   uint32_t flash_crc_accum;
   initSoftwareCRC32(&flash_crc_accum);
@@ -407,28 +465,25 @@ void performFOTA() {
   }
   Serial.println("✅ PASS");
 
-  // Output final success result
+  // Print final success result
   Serial.println("\n=======================================================");
   Serial.println("🎉 [SUCCESS] Download & Serial Flash Write Successfully Completed!");
   Serial.println("=======================================================");
 
-  // Execute header marking logic right after Stage 2 PASS
   Serial.println("Marking bootloader update header on Sector 0...");
 
-  // Erase Sector 0
+  // Erase Sector 0 and write header
   flashEraseSector4K(0x000000);
 
-  // Create firmware header structure
   FirmwareHeader_t header;
-  header.magic = 0x55AA1234;           // Magic Number for bootloader recognition
-  header.status = 0x01;                // UPDATE PENDING
-  header.firmware_size = total_size;   // Firmware size in bytes
-  header.firmware_crc = expected_crc;  // CRC32 checksum
+  header.magic = 0x55AA1234;
+  header.status = 0x01;
+  header.firmware_size = total_size;
+  header.firmware_crc = expected_crc;
 
-  // Write header (64 Bytes) at address 0x000000
   flashWritePage(0x000000, (uint8_t *)&header, sizeof(header));
 
-  // Read-back verification for Sector 0 header
+  // Verify Sector 0 Read-back
   Serial.println("\nReading back Sector 0 header for verification...");
   FirmwareHeader_t read_header;
   flashReadData(0x000000, (uint8_t *)&read_header, sizeof(read_header));
@@ -446,7 +501,7 @@ void performFOTA() {
   }
 
   Serial.println("\nRebooting system via NVIC_SystemReset...");
-  NVIC_SystemReset(); // Software reset to trigger bootloader entry
+  NVIC_SystemReset();
 }
 
 // ==========================================
@@ -458,7 +513,6 @@ void setup() {
   while (!Serial)
     ;
 
-  // Configure Software SPI Pin Modes
   pinMode(FLASH_CS, OUTPUT);
   pinMode(FLASH_SCK, OUTPUT);
   pinMode(FLASH_MOSI, OUTPUT);
@@ -482,10 +536,8 @@ void setup() {
     }
   }
 
-  // Execute FOTA test
   performFOTA();
 }
 
 void loop() {
-  // Standby loop after test completion
 }
